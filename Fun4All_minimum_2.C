@@ -19,7 +19,8 @@ R__LOAD_LIBRARY( libtutorial.so )
 
 int Fun4All_minimum_2(
 		     int nEvents = 1, //5,
-		     const string &inputFile = "https://www.phenix.bnl.gov/WWW/publish/phnxbld/sPHENIX/files/sPHENIX_G4Hits_sHijing_9-11fm_00000_00010.root",
+		     const string &inputFile = "/sphenix/tg/tg01/commissioning/INTT/work/hachiya/InttReco/DST_InttCluster_run20869.root",
+		     //"https://www.phenix.bnl.gov/WWW/publish/phnxbld/sPHENIX/files/sPHENIX_G4Hits_sHijing_9-11fm_00000_00010.root",
 		     const int skip = 0
 		     )
 {
