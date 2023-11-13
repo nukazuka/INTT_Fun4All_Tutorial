@@ -215,13 +215,13 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /sphenix/u/nukazuka/work_now/module/missing aclocal-1.13
+ACLOCAL = ${SHELL} /sphenix/u/nukazuka/work_now/sample_module_2/missing aclocal-1.13
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
 AR = ar
-AUTOCONF = ${SHELL} /sphenix/u/nukazuka/work_now/module/missing autoconf
-AUTOHEADER = ${SHELL} /sphenix/u/nukazuka/work_now/module/missing autoheader
-AUTOMAKE = ${SHELL} /sphenix/u/nukazuka/work_now/module/missing automake-1.13
+AUTOCONF = ${SHELL} /sphenix/u/nukazuka/work_now/sample_module_2/missing autoconf
+AUTOHEADER = ${SHELL} /sphenix/u/nukazuka/work_now/sample_module_2/missing autoheader
+AUTOMAKE = ${SHELL} /sphenix/u/nukazuka/work_now/sample_module_2/missing automake-1.13
 AWK = gawk
 CC = /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/gcc/12.1.0-57c96/x86_64-centos7/bin/gcc
 CCDEPMODE = depmode=gcc3
@@ -231,7 +231,7 @@ CPPFLAGS =
 CXX = /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/gcc/12.1.0-57c96/x86_64-centos7/bin/g++
 CXXCPP = /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/gcc/12.1.0-57c96/x86_64-centos7/bin/g++ -E
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -g -O2 -std=c++17 -Wall -Werror
+CXXFLAGS = -Werror
 CYGPATH_W = echo
 DEFS = -DPACKAGE_NAME=\"tutorial\" -DPACKAGE_TARNAME=\"tutorial\" -DPACKAGE_VERSION=\"1.00\" -DPACKAGE_STRING=\"tutorial\ 1.00\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DPACKAGE=\"tutorial\" -DVERSION=\"1.00\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_DLFCN_H=1 -DLT_OBJDIR=\".libs/\"
 DEPDIR = .deps
@@ -258,7 +258,7 @@ LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIPO = 
 LN_S = ln -s
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /sphenix/u/nukazuka/work_now/module/missing makeinfo
+MAKEINFO = ${SHELL} /sphenix/u/nukazuka/work_now/sample_module_2/missing makeinfo
 MANIFEST_TOOL = :
 MKDIR_P = /usr/bin/mkdir -p
 NM = /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/binutils/2.37-355ed/x86_64-centos7/bin/nm -B
@@ -281,10 +281,10 @@ SET_MAKE =
 SHELL = /bin/sh
 STRIP = strip
 VERSION = 1.00
-abs_builddir = /sphenix/u/nukazuka/work_now/module
-abs_srcdir = /sphenix/u/nukazuka/work_now/module
-abs_top_builddir = /sphenix/u/nukazuka/work_now/module
-abs_top_srcdir = /sphenix/u/nukazuka/work_now/module
+abs_builddir = /sphenix/u/nukazuka/work_now/sample_module_2
+abs_srcdir = /sphenix/u/nukazuka/work_now/sample_module_2
+abs_top_builddir = /sphenix/u/nukazuka/work_now/sample_module_2
+abs_top_srcdir = /sphenix/u/nukazuka/work_now/sample_module_2
 ac_ct_AR = ar
 ac_ct_CC = /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/gcc/12.1.0-57c96/x86_64-centos7/bin/gcc
 ac_ct_CXX = 
@@ -314,7 +314,7 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /sphenix/u/nukazuka/work_now/module/install-sh
+install_sh = ${SHELL} /sphenix/u/nukazuka/work_now/sample_module_2/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -323,7 +323,7 @@ mandir = ${datarootdir}/man
 mkdir_p = $(MKDIR_P)
 oldincludedir = /usr/include
 pdfdir = ${docdir}
-prefix = /sphenix/u/nukazuka/work_now/module/install
+prefix = /sphenix/u/nukazuka/work_now/sample_module_2/install
 program_transform_name = s,x,x,
 psdir = ${docdir}
 sbindir = ${exec_prefix}/sbin
@@ -356,7 +356,8 @@ libtutorial_la_SOURCES = \
 
 libtutorial_la_LIBADD = \
   -lphool \
-  -lSubsysReco
+  -lSubsysReco \
+  -ltrack_io
 
 BUILT_SOURCES = testexternals.cc
 testexternals_SOURCES = testexternals.cc

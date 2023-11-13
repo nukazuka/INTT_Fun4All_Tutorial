@@ -65,7 +65,9 @@
 
 //____________________________________________________________________________..
 tutorial::tutorial(const std::string &name):
- SubsysReco(name)
+  SubsysReco(name),
+  output_( nullptr ),
+  hist_cluster_( nullptr )
 {
   std::cout << "tutorial::tutorial(const std::string &name) Calling ctor" << std::endl;
 }
@@ -80,6 +82,15 @@ tutorial::~tutorial()
 int tutorial::Init(PHCompositeNode *topNode)
 {
   std::cout << "tutorial::Init(PHCompositeNode *topNode) Initializing" << std::endl;
+
+  ////////////////////////////////////////////////////////
+  // Initialization of the member                       //
+  ////////////////////////////////////////////////////////
+  output_ = new TFile( output_path_.c_str(), "RECREATE" );
+  
+  hist_cluster_ = new TH1D( "hist_cluster", "Number of cluster distribution;#Cluster;Entries", 100, 0, 100 );
+  
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -97,18 +108,7 @@ int tutorial::process_event(PHCompositeNode *topNode)
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Getting Nodes                                                                        //
-  //////////////////////////////////////////////////////////////////////////////////////////
-  // event header node: Information of events, e.g. event seqence
-  auto *node_event_header = 
-    findNode::getClass<EventHeaderv1>(topNode, "EventHeader");
-
-  if (!node_event_header )
-    {
-      std::cerr << PHWHERE << "Eventheader node is missging." << std::endl;
-      return Fun4AllReturnCodes::ABORTEVENT;
-
-    }
-  
+  //////////////////////////////////////////////////////////////////////////////////////////  
   // TRKR_CLUSTER node: Information of TrkrCluster
   auto *node_cluster_map = 
     findNode::getClass<TrkrClusterContainerv4>(topNode, "TRKR_CLUSTER");
@@ -119,6 +119,15 @@ int tutorial::process_event(PHCompositeNode *topNode)
       return Fun4AllReturnCodes::ABORTEVENT;
     }
 
+  // ActsGeometry node: for the global coordinate
+  ActsGeometry *node_acts = findNode::getClass<ActsGeometry>(topNode, "ActsGeometry");
+  if ( !node_acts )
+    {
+      std::cout << PHWHERE << "No ActsGeometry on node tree. Bailing." << std::endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
+
+  
   //////////////////////////////////////////////////////////////////////////////////////////
   // Loop over TrkrClusters                                                               //
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -133,13 +142,9 @@ int tutorial::process_event(PHCompositeNode *topNode)
       for (const auto &hitsetkey : node_cluster_map->getHitSetKeys(TrkrDefs::TrkrId::inttId, inttlayer + 3) )
 	{
 
-	  // getHitSetKeys -> using HitSetKeyList = std::vector<TrkrDefs::hitsetkey>;
-	  // TrkrDefs::hitsetkey -> typedefuint32_t	  
-	    //cout << "\tHit set key: " << hitsetkey << endl;
-	  
-	  auto range = node_cluster_map->getClusters(hitsetkey);
 	  // type: std::pair<ConstIterator, ConstIterator> ConstRange
 	  // here, MMap::const_iterator ConstIterator;
+	  auto range = node_cluster_map->getClusters(hitsetkey);
       
 	  // loop over iterators of this cluster
 	  for (auto clusIter = range.first; clusIter != range.second; ++clusIter)
@@ -148,44 +153,46 @@ int tutorial::process_event(PHCompositeNode *topNode)
 	      const auto cluster = clusIter->second;
 	      clusters.push_back( cluster );
 
-	      /*
-	      const auto globalPos = m_tGeometry->getGlobalPosition(cluskey, cluster);
+	      const auto globalPos = node_acts->getGlobalPosition(cluskey, cluster);
 	
-	      int ladder_z   = InttDefs::getLadderZId(cluskey);
-	      int ladder_phi = InttDefs::getLadderPhiId(cluskey);
+	      // int ladder_z   = InttDefs::getLadderZId(cluskey);
+	      // int ladder_phi = InttDefs::getLadderPhiId(cluskey);
 	      int size       = cluster->getSize();
 
 	      //	      if( nCluster < 5 )
 	      if (Verbosity() > 5)
 		{
-		  cout << "xyz("
-		       << setprecision(4) << setw(8) << globalPos.x() << ", "
-		       << setprecision(4) << setw(8) << globalPos.y() << ", "
-		       << setprecision(4) << setw(8) << globalPos.z()
-		       << ") \t"
+		  std::cout
+		    // << "xyz("
+		    //    << std::setprecision(4) << std::setw(8) << globalPos.x() << ", "
+		    //    << std::setprecision(4) << std::setw(8) << globalPos.y() << ", "
+		    //    << std::setprecision(4) << std::setw(8) << globalPos.z()
+		    //    << ") \t"
 		       << "xyz("
-		       << setprecision(4) << setw(8) << cluster->getPosition( 0 ) << ", "
-		       << setprecision(4) << setw(8) << cluster->getPosition( 1 ) << ", "
-		       << setprecision(4) << setw(8) << cluster->getPosition( 2 ) << ") "
+		       << std::setprecision(4) << std::setw(8) << cluster->getPosition( 0 ) << ", "
+		       << std::setprecision(4) << std::setw(8) << cluster->getPosition( 1 ) << ", "
+		       << std::setprecision(4) << std::setw(8) << cluster->getPosition( 2 ) << ") "
 		       << "local xy("
-		       << setprecision(4) << setw(8) << cluster->getLocalX() << ", "
-		       << setprecision(4) << setw(8) << cluster->getLocalY() << ")\t "
+		       << std::setprecision(4) << std::setw(8) << cluster->getLocalX() << ", "
+		       << std::setprecision(4) << std::setw(8) << cluster->getLocalY() << ")\t "
 		    
 		       << cluster->getAdc() << " "
 		       << size << " "
 		       << inttlayer << " "
-		       << ladder_z << " "
-		       << ladder_phi
-		       << endl;
+		       // << ladder_z << " "
+		       // << ladder_phi
+		       << std::endl;
 		}
 
 		cluster->setPosition(0,  globalPos.x() );
 		cluster->setPosition(1,  globalPos.y() );
 		cluster->setPosition(2,  globalPos.z() );
-	      */
 	    }
 	}
     }
+
+  std::cout << clusters.size() << " clusters in this event" << std::endl;
+  hist_cluster_->Fill( clusters.size() );
   
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -208,6 +215,16 @@ int tutorial::EndRun(const int runnumber)
 int tutorial::End(PHCompositeNode *topNode)
 {
   std::cout << "tutorial::End(PHCompositeNode *topNode) This is the End..." << std::endl;
+
+
+
+  ////////////////////////////////////////////////////////
+  // Writing objects to the output file                 //
+  ////////////////////////////////////////////////////////
+  output_->WriteTObject( hist_cluster_, hist_cluster_->GetName() );
+  output_->Close();
+
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 

@@ -9,9 +9,15 @@
 #include <phool/getClass.h>
 #include <trackbase/TrkrClusterv4.h>
 #include <trackbase/TrkrClusterContainerv4.h>
+#include <trackbase/ActsGeometry.h>
 #include <ffaobjects/EventHeaderv1.h>
 
 #include <string>
+#include <iostream>
+#include <iomanip>
+
+#include <TFile.h>
+#include <TH1D.h>
 
 class PHCompositeNode;
 
@@ -56,7 +62,13 @@ class tutorial : public SubsysReco
 
   void Print(const std::string &what = "ALL") const override;
 
+  void SetOutputPath( std::string path ){ output_path_ = path; };
  private:
+
+  std::string output_path_ = "tutorial_results_MC.root";
+  TFile* output_;
+  TH1D* hist_cluster_;
+  
 };
 
 #endif // TUTORIAL_H

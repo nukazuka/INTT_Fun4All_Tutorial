@@ -4,6 +4,12 @@
 #define TUTORIAL_H
 
 #include <fun4all/SubsysReco.h>
+#include <fun4all/Fun4AllReturnCodes.h>
+#include <phool/PHCompositeNode.h>
+#include <phool/getClass.h>
+#include <trackbase/TrkrClusterv4.h>
+#include <trackbase/TrkrClusterContainerv4.h>
+#include <ffaobjects/EventHeaderv1.h>
 
 #include <string>
 
