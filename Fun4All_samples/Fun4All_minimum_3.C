@@ -1,6 +1,7 @@
 #include <GlobalVariables.C>
 
-#include <G4Setup_sPHENIX_Bbc.C>
+//#include <G4Setup_sPHENIX_Bbc.C>
+#include <G4Setup_sPHENIX.C>
 // #include <G4_Bbc.C>
 // #include <G4_CaloTrigger.C>
 // #include <G4_Centrality.C>
