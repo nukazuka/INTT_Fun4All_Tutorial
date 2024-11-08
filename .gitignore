@@ -37,3 +37,6 @@ Fun4All_Intt_cosmics.C
 cpp_basics/temp
 build
 install
+autom4te.cache
+.deps
+.libs
