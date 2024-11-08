@@ -35,3 +35,5 @@
 Fun4All_Intt_cosmics.C
 *.root
 cpp_basics/temp
+build
+install
