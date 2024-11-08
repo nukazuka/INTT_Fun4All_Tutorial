@@ -3,7 +3,7 @@
 
   How To Compile
     1) Compile everything at once
-      $ g++ sample5.cc function.cc
+      $ g++ sample5.cc function5.cc
       
     2) Split compilation (分割コンパイル) by hand
       $ g++ -o sample5.o -c sample5.cc
