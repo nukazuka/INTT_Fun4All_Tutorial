@@ -49,7 +49,7 @@ libfunction5.so: function5.cc
 
 
 # If you want to do everything, all is commonly used.
-all: clean $(TARGET)
+all: clean sample5_1 sample5_2 sample5_3
 
 # To clean your working directory, clean is commonly used.
 clean:
