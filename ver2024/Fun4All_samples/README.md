@@ -15,17 +15,19 @@ It shows how to add your own analysis module.
 - Fun4All_minimum_2.C
 - sample_module_1
 
-### Step3
+### [Step3](./sample_module_3/README.md)
 See INTT hits from MC events.
 
 #### Files/Directories
 - Fun4All_minimum_3.C
 - sample_module3
 
-### Step4
+### [Step4](./sample_module_4/README.md)
 A DST file is read, and information of INTTRAWHIT is pritend.
 
 #### Files/Directories
 - Fun4All_minimum_4.C
 - sample_module4
 
+### [Step5](./sample_module_5/README.md)
+### [Step6](./sample_module_6/README.md)
