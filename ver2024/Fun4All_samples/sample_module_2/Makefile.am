@@ -21,8 +21,7 @@ libtutorial_la_SOURCES = \
 
 libtutorial_la_LIBADD = \
   -lphool \
-  -lSubsysReco \
-  -ltrack_io
+  -lSubsysReco
 
 BUILT_SOURCES = testexternals.cc
 

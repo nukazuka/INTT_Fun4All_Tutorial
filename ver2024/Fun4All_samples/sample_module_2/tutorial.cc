@@ -63,6 +63,10 @@
 
 #include "tutorial.h"
 
+#include <fun4all/Fun4AllReturnCodes.h>
+
+#include <phool/PHCompositeNode.h>
+
 //____________________________________________________________________________..
 tutorial::tutorial(const std::string &name):
  SubsysReco(name)
@@ -94,99 +98,6 @@ int tutorial::InitRun(PHCompositeNode *topNode)
 int tutorial::process_event(PHCompositeNode *topNode)
 {
   std::cout << "tutorial::process_event(PHCompositeNode *topNode) Processing Event" << std::endl;
-
-  //////////////////////////////////////////////////////////////////////////////////////////
-  // Getting Nodes                                                                        //
-  //////////////////////////////////////////////////////////////////////////////////////////
-  // event header node: Information of events, e.g. event seqence
-  auto *node_event_header = 
-    findNode::getClass<EventHeaderv1>(topNode, "EventHeader");
-
-  if (!node_event_header )
-    {
-      std::cerr << PHWHERE << "Eventheader node is missging." << std::endl;
-      return Fun4AllReturnCodes::ABORTEVENT;
-
-    }
-  
-  // TRKR_CLUSTER node: Information of TrkrCluster
-  auto *node_cluster_map = 
-    findNode::getClass<TrkrClusterContainerv4>(topNode, "TRKR_CLUSTER");
-
-  if (!node_cluster_map)
-    {
-      std::cerr << PHWHERE << "TrkrClusterContainer node is missing." << std::endl;
-      return Fun4AllReturnCodes::ABORTEVENT;
-    }
-
-  //////////////////////////////////////////////////////////////////////////////////////////
-  // Loop over TrkrClusters                                                               //
-  //////////////////////////////////////////////////////////////////////////////////////////
-
-  std::vector < TrkrCluster* > clusters;
-  for (unsigned int inttlayer = 0; inttlayer < 4; inttlayer++)
-    {
-      //      cout << " INTT layer " << inttlayer << endl;
-      //      int layer= ( inttlayer < 2 ? 0 : 1 );
-
-      // loop over all hits
-      for (const auto &hitsetkey : node_cluster_map->getHitSetKeys(TrkrDefs::TrkrId::inttId, inttlayer + 3) )
-	{
-
-	  // getHitSetKeys -> using HitSetKeyList = std::vector<TrkrDefs::hitsetkey>;
-	  // TrkrDefs::hitsetkey -> typedefuint32_t	  
-	    //cout << "\tHit set key: " << hitsetkey << endl;
-	  
-	  auto range = node_cluster_map->getClusters(hitsetkey);
-	  // type: std::pair<ConstIterator, ConstIterator> ConstRange
-	  // here, MMap::const_iterator ConstIterator;
-      
-	  // loop over iterators of this cluster
-	  for (auto clusIter = range.first; clusIter != range.second; ++clusIter)
-	    {
-	      const auto cluskey = clusIter->first;
-	      const auto cluster = clusIter->second;
-	      clusters.push_back( cluster );
-
-	      /*
-	      const auto globalPos = m_tGeometry->getGlobalPosition(cluskey, cluster);
-	
-	      int ladder_z   = InttDefs::getLadderZId(cluskey);
-	      int ladder_phi = InttDefs::getLadderPhiId(cluskey);
-	      int size       = cluster->getSize();
-
-	      //	      if( nCluster < 5 )
-	      if (Verbosity() > 5)
-		{
-		  cout << "xyz("
-		       << setprecision(4) << setw(8) << globalPos.x() << ", "
-		       << setprecision(4) << setw(8) << globalPos.y() << ", "
-		       << setprecision(4) << setw(8) << globalPos.z()
-		       << ") \t"
-		       << "xyz("
-		       << setprecision(4) << setw(8) << cluster->getPosition( 0 ) << ", "
-		       << setprecision(4) << setw(8) << cluster->getPosition( 1 ) << ", "
-		       << setprecision(4) << setw(8) << cluster->getPosition( 2 ) << ") "
-		       << "local xy("
-		       << setprecision(4) << setw(8) << cluster->getLocalX() << ", "
-		       << setprecision(4) << setw(8) << cluster->getLocalY() << ")\t "
-		    
-		       << cluster->getAdc() << " "
-		       << size << " "
-		       << inttlayer << " "
-		       << ladder_z << " "
-		       << ladder_phi
-		       << endl;
-		}
-
-		cluster->setPosition(0,  globalPos.x() );
-		cluster->setPosition(1,  globalPos.y() );
-		cluster->setPosition(2,  globalPos.z() );
-	      */
-	    }
-	}
-    }
-  
   return Fun4AllReturnCodes::EVENT_OK;
 }
 

@@ -8,12 +8,12 @@ The minimum sample. It's just a practice to run Fun4All.
 #### Files
 - Fun4All_minimum.C
 
-### Step2
+### [Step2](./sample_module_2/README.md)
 It shows how to add your own analysis module.
 
 #### Files/Directories
 - Fun4All_minimum_2.C
-- sample_module2
+- sample_module_1
 
 ### Step3
 See INTT hits from MC events.
