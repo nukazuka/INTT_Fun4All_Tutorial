@@ -19,10 +19,11 @@ lib_LTLIBRARIES = \
 libtutorial_la_SOURCES = \
   tutorial.cc
 
+# track_io was used, but it was changed on Oct/2024 (https://github.com/sPHENIX-Collaboration/coresoftware/commit/a7bda46964f52b53377ad8b6bc61cbc8df472a70)
 libtutorial_la_LIBADD = \
   -lphool \
   -lSubsysReco \
-  -ltrack_io
+  -lfun4allraw
 
 BUILT_SOURCES = testexternals.cc
 

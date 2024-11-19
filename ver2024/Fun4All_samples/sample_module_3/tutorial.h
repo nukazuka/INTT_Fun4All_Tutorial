@@ -3,21 +3,25 @@
 #ifndef TUTORIAL_H
 #define TUTORIAL_H
 
+// Fun4All libraries
 #include <fun4all/SubsysReco.h>
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <phool/PHCompositeNode.h>
 #include <phool/getClass.h>
-#include <trackbase/TrkrClusterv4.h>
-#include <trackbase/TrkrClusterContainerv4.h>
-#include <trackbase/ActsGeometry.h>
-#include <ffaobjects/EventHeaderv1.h>
+
+#include <ffarawobjects/InttRawHit.h>
+#include <ffarawobjects/InttRawHitv2.h>
+#include <ffarawobjects/InttRawHitContainer.h>
+#include <ffarawobjects/InttRawHitContainerv2.h>
 
 #include <string>
 #include <iostream>
 #include <iomanip>
 
+// ROOT libraries
 #include <TFile.h>
 #include <TH1D.h>
+#include <TFile.h>
 
 class PHCompositeNode;
 
@@ -29,23 +33,12 @@ class tutorial : public SubsysReco
 
   ~tutorial() override;
 
-  /** Called during initialization.
-      Typically this is where you can book histograms, and e.g.
-      register them to Fun4AllServer (so they can be output to file
-      using Fun4AllServer::dumpHistos() method).
-   */
+  //! Init function of this analysis module. ROOT file is opened. A histgram object is created.
   int Init(PHCompositeNode *topNode) override;
 
-  /** Called for first event when run number is known.
-      Typically this is where you may want to fetch data from
-      database, because you know the run number. A place
-      to book histograms which have to know the run number.
-   */
   int InitRun(PHCompositeNode *topNode) override;
 
-  /** Called for each event.
-      This is where you do the real work.
-   */
+  //! This function is executed in each event
   int process_event(PHCompositeNode *topNode) override;
 
   /// Clean up internals after each event.
@@ -62,13 +55,16 @@ class tutorial : public SubsysReco
 
   void Print(const std::string &what = "ALL") const override;
 
+  //! You can set the name of the output file, otherwise it's tutorial_sample3.root
   void SetOutputPath( std::string path ){ output_path_ = path; };
+  
  private:
 
-  std::string output_path_ = "tutorial_results_MC.root";
-  TFile* output_;
-  TH1D* hist_cluster_;
-  
+  // private member variables and objects for output
+  std::string output_path_ = "tutorial_sample3.root";
+  TFile* output_; //! I/O of output ROOT file
+  TH1D* hist_hit_num_; //! a histogram for the number of raw hit per event
+  void PrintHitParameterHeader(); //! Printing a header line for raw hit parameters
 };
 
 #endif // TUTORIAL_H

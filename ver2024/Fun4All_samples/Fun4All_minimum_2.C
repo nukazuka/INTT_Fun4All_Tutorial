@@ -1,4 +1,5 @@
 #include <fun4all/Fun4AllServer.h>
+#include <fun4all/SubsysReco.h>
 
 R__LOAD_LIBRARY(libfun4all.so)
 
