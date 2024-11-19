@@ -9,7 +9,7 @@ R__LOAD_LIBRARY(libfun4all.so)
 R__LOAD_LIBRARY( libtutorial.so )
 
 int Fun4All_minimum_3( int nEvents = 1,
-		       const string &data = "/sphenix/lustre01/sphnxpro/physics/slurp/streaming/physics/inttonlyrun_00051100_00051200/DST_INTT_EVENT_run2pp_new_2024p002-00051171-00000.root" )
+		       const string &data = "/sphenix/lustre01/sphnxpro/physics/slurp/streaming/physics/inttonlyrun_00051100_00051200/DST_INTT_EVENT_run2pp_new_2024p002-00051100-00000.root" )
 {
 
   Fun4AllServer *se = Fun4AllServer::instance();
