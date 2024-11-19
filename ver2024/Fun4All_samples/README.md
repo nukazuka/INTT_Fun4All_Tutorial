@@ -16,20 +16,21 @@ It shows how to add your own analysis module.
 - sample_module_2
 
 ### [Step3](./sample_module_3/README.md)
-See INTT hits from MC events.
+Analysis of InttRawHit a DST.
 
 #### Files/Directories
 - Fun4All_minimum_3.C
 - sample_module3
 
 ### [Step4](./sample_module_4/README.md)
-A DST file is read, and information of INTTRAWHIT is pritend.
+Analysis of TrkrCluster with a DST.
 
 #### Files/Directories
 - Fun4All_minimum_4.C
 - sample_module4
 
 ### [Step5](./sample_module_5/README.md)
+Analysis of TrkrCluster with MC data generated in the proces.
 
 #### Files
 - Fun4All_minimum_5.C
