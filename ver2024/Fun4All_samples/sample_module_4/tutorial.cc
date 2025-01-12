@@ -156,6 +156,7 @@ int tutorial::cluster_analysis(PHCompositeNode *topNode, TrkrClusterContainerv4*
 	      position_[2] = cluster->getPosition( 2 ); // z
 	      adc_ = cluster->getAdc();
 	      size_phi_ = cluster->getPhiSize();
+	      layer_ = inttlayer;
 
 	      /** @TODO Calculate phi, theta, eta (pseudorapidity) by yourself		 
 		phi_ = 0; // (radian)

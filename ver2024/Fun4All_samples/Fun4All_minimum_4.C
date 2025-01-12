@@ -27,8 +27,9 @@ R__LOAD_LIBRARY(libfun4all.so)
 R__LOAD_LIBRARY( libtutorial.so )
 
 int Fun4All_minimum_4(
-		      int nEvents = 10,
-		      const string &data = "/sphenix/lustre01/sphnxpro/physics/slurp/tracking/new_2024p007/run_00051100_00051200/DST_TRKR_CLUSTER_run2pp_new_2024p007-00051100-00000.root" 
+		      int nEvents = 100,
+		      //const string &data = "/sphenix/lustre01/sphnxpro/physics/slurp/tracking/new_2024p007/run_00051100_00051200/DST_TRKR_CLUSTER_run2pp_new_2024p007-00051100-00000.root" // doesn't exist anymore....
+		      const string &data = "/sphenix/lustre01/sphnxpro/physics/slurp/tracking/ana441_2024p007/run_00051400_00051500/DST_TRKR_CLUSTER_run2pp_ana441_2024p007-00051428-00000.root"
 		      )
 {
   
@@ -64,7 +65,7 @@ int Fun4All_minimum_4(
   Enable::MICROMEGAS				= true;
   Enable::INTT					= true;
   Enable::BLACKHOLE				= true;
-  G4MAGNET::magfield_rescale = 1.4;
+  G4MAGNET::magfield_rescale = 1.0;
 
   // Initialize the selected subsystems
   // G4Init();

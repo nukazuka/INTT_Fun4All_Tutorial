@@ -15,7 +15,6 @@
 #include <phool/recoConsts.h>
 
 #include <trackbase/ActsGeometry.h>
-#include <trackbase/InttDefs.h>
 #include <trackbase/TrkrDefs.h>
 #include <trackbase/TrkrClusterv4.h>
 #include <trackbase/TrkrClusterContainerv4.h>
@@ -30,7 +29,6 @@
 #include "TFile.h"
 #include "TTree.h"
 
-
 class PHCompositeNode;
 
 class tutorial : public SubsysReco
@@ -41,23 +39,10 @@ class tutorial : public SubsysReco
 
   ~tutorial() override;
 
-  /** Called during initialization.
-      Typically this is where you can book histograms, and e.g.
-      register them to Fun4AllServer (so they can be output to file
-      using Fun4AllServer::dumpHistos() method).
-   */
   int Init(PHCompositeNode *topNode) override;
 
-  /** Called for first event when run number is known.
-      Typically this is where you may want to fetch data from
-      database, because you know the run number. A place
-      to book histograms which have to know the run number.
-   */
   int InitRun(PHCompositeNode *topNode) override;
 
-  /** Called for each event.
-      This is where you do the real work.
-   */
   int process_event(PHCompositeNode *topNode) override;
 
   /// Clean up internals after each event.
@@ -74,7 +59,7 @@ class tutorial : public SubsysReco
 
   void Print(const std::string &what = "ALL") const override;
 
-  //! You can set the name of the output file, otherwise it's tutorial_sample3.root
+  //! You can set the name of the output file, otherwise it's tutorial_sample4.root
   void SetOutputPath( std::string path ){ output_path_ = path; };
 
  private:
