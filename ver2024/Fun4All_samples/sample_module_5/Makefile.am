@@ -19,10 +19,14 @@ lib_LTLIBRARIES = \
 libtutorial_la_SOURCES = \
   tutorial.cc
 
-# You may need to add flags to use some shared libraries
 libtutorial_la_LIBADD = \
+  -lphool \
   -lSubsysReco \
-  -lffarawobjects
+  -lffaobjects \
+  -lffarawobjects \
+  -ltrack_io \
+  -lmbd_io \
+  -lintt
 
 BUILT_SOURCES = testexternals.cc
 

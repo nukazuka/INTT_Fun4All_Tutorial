@@ -1,215 +1,326 @@
-//____________________________________________________________________________..
-//
-// This is a template for a Fun4All SubsysReco module with all methods from the
-// $OFFLINE_MAIN/include/fun4all/SubsysReco.h baseclass
-// You do not have to implement all of them, you can just remove unused methods
-// here and in tutorial.h.
-//
-// tutorial(const std::string &name = "tutorial")
-// everything is keyed to tutorial, duplicate names do work but it makes
-// e.g. finding culprits in logs difficult or getting a pointer to the module
-// from the command line
-//
-// tutorial::~tutorial()
-// this is called when the Fun4AllServer is deleted at the end of running. Be
-// mindful what you delete - you do loose ownership of object you put on the node tree
-//
-// int tutorial::Init(PHCompositeNode *topNode)
-// This method is called when the module is registered with the Fun4AllServer. You
-// can create historgrams here or put objects on the node tree but be aware that
-// modules which haven't been registered yet did not put antyhing on the node tree
-//
-// int tutorial::InitRun(PHCompositeNode *topNode)
-// This method is called when the first event is read (or generated). At
-// this point the run number is known (which is mainly interesting for raw data
-// processing). Also all objects are on the node tree in case your module's action
-// depends on what else is around. Last chance to put nodes under the DST Node
-// We mix events during readback if branches are added after the first event
-//
-// int tutorial::process_event(PHCompositeNode *topNode)
-// called for every event. Return codes trigger actions, you find them in
-// $OFFLINE_MAIN/include/fun4all/Fun4AllReturnCodes.h
-//   everything is good:
-//     return Fun4AllReturnCodes::EVENT_OK
-//   abort event reconstruction, clear everything and process next event:
-//     return Fun4AllReturnCodes::ABORT_EVENT; 
-//   proceed but do not save this event in output (needs output manager setting):
-//     return Fun4AllReturnCodes::DISCARD_EVENT; 
-//   abort processing:
-//     return Fun4AllReturnCodes::ABORT_RUN
-// all other integers will lead to an error and abort of processing
-//
-// int tutorial::ResetEvent(PHCompositeNode *topNode)
-// If you have internal data structures (arrays, stl containers) which needs clearing
-// after each event, this is the place to do that. The nodes under the DST node are cleared
-// by the framework
-//
-// int tutorial::EndRun(const int runnumber)
-// This method is called at the end of a run when an event from a new run is
-// encountered. Useful when analyzing multiple runs (raw data). Also called at
-// the end of processing (before the End() method)
-//
-// int tutorial::End(PHCompositeNode *topNode)
-// This is called at the end of processing. It needs to be called by the macro
-// by Fun4AllServer::End(), so do not forget this in your macro
-//
-// int tutorial::Reset(PHCompositeNode *topNode)
-// not really used - it is called before the dtor is called
-//
-// void tutorial::Print(const std::string &what) const
-// Called from the command line - useful to print information when you need it
-//
-//____________________________________________________________________________..
-
 #include "tutorial.h"
-using namespace std;
 
-//____________________________________________________________________________..
 tutorial::tutorial(const std::string &name):
  SubsysReco(name)
-{
-  output_name_ = "output.root";
-}
+{}
 
-//____________________________________________________________________________..
 tutorial::~tutorial()
-{
+{}
 
-}
-
-//____________________________________________________________________________..
 int tutorial::Init(PHCompositeNode *topNode)
 {
 
+  ////////////////////////////////////////////////////////
+  // Initialization of the member                       //
+  ////////////////////////////////////////////////////////
+  output_ = new TFile( output_path_.c_str(), "RECREATE" );
+
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Preparation of event base tree                                                //
+  ///////////////////////////////////////////////////////////////////////////////////
+  tree_event_ = new TTree( "tree_event", "Event base TTree" );
+  tree_event_->Branch( "run",         &run_num_,     "run_num/I" );
+  tree_event_->Branch( "event",       &event_id_,    "event_id/I" );
+
+  // cluster parameters
+  tree_event_->Branch( "cluster_num", &cluster_num_, "cluster_num/I" );
+
+  // 0: inner layer of inner barrel
+  // 1: outer layer of inner barrel
+  // 2: inner layer of outer barrel
+  // 3: outer layer of outer barrel
+  tree_event_->Branch( "cluster_num_layer", &cluster_num_layer_, "cluster_num_layer_[4]/I" );
+
+  // MbdOut parameters
+  tree_event_->Branch( "vertex_mbd", position_mbd_, "vertex_mbd[3]/F" );
+  tree_event_->Branch( "vertex_error_", position_error_mbd_, "vertex_error_mbd[3]/F" );
+  tree_event_->Branch( "is_valid_mbd", &is_valid_mbd_out_, "is_valid_mbd/O" );
+  tree_event_->Branch( "mbd_q",        &mbd_q_,            "mbd_q/F" );
+  tree_event_->Branch( "mbd_q_part",   mbd_q_part_,        "mbd_q_part[2]/F" );
+
+  ///////////////////////////////////////////////////////////////////////////////////
+  // Preparation of cluster base tree                                              //
+  ///////////////////////////////////////////////////////////////////////////////////
+  tree_cluster_ = new TTree( "tree_cluster", "Cluster base TTree" );
+
+  tree_cluster_->Branch( "run",      &run_num_,  "run_num/I" );
+  tree_cluster_->Branch( "event",    &event_id_, "event_id/I" );
+  tree_cluster_->Branch( "position", &position_, "position[3]/F" );
+  tree_cluster_->Branch( "layer",    &layer_,    "layer/I" );
+  tree_cluster_->Branch( "adc",      &adc_,      "adc/F" );
+  tree_cluster_->Branch( "size_phi", &size_phi_, "size_phi_/F" );
+  tree_cluster_->Branch( "phi",      &phi_,      "phi/F" );
+  tree_cluster_->Branch( "theta",    &theta_,    "theta/F" );
+  tree_cluster_->Branch( "eta",      &eta_,      "eta/F" );
+  tree_cluster_->Branch( "eta_diff", &eta_diff_, "eta_diff/F" );
+
+  // MBDout parameters
+  tree_cluster_->Branch( "vertex_mbd", position_mbd_, "vertex_mbd[3]/F" ); // needed?
+  tree_cluster_->Branch( "is_valid_mbd", &is_valid_mbd_out_, "is_valid_mbd/O" ); // needed to reject bad events
+
+
+  // Execute the reset function to assign initial value
+  this->ResetEvent( topNode );
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-//____________________________________________________________________________..
 int tutorial::InitRun(PHCompositeNode *topNode)
 {
 
-
-  //////////////////////////////////////////////////////////////////////////////////////////
-  // Initialization of file output                                                        //
-  //////////////////////////////////////////////////////////////////////////////////////////
-  output_ = new TFile( output_name_.c_str(), "RECREATE" ) ;
-
-  //////////////////////////////////////////////////////////////////////////////////////////
-  // Initialization of histgrams                                                          //
-  //////////////////////////////////////////////////////////////////////////////////////////
-  // the number of hits in an event
-  hist_hit_num_ = new TH1D( "hist_hit_num_",
-			    "#INTTRAWHIT;The number of INTTRAWHIT;Entries",
-			    1000, 0.0, 1e6 );
-  
-  //////////////////////////////////////////////////////////////////////////////////////////
-  // Initialization of TTrees (ntuples also)                                              //
-  //////////////////////////////////////////////////////////////////////////////////////////
-  tree_ = new TTree( "tree_INTT_raw_hit", "TTree for INTTRAWHIT information" );
-  tree_->Branch( "pid", &pid_, "pid/I" );
-  tree_->Branch( "bco_full", &bco_full_, "bco_full/L" );
-  tree_->Branch( "bco", &bco_, "bco/I" );
-  tree_->Branch( "diff", &diff_, "diff/I" );
-  
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-//____________________________________________________________________________..
 int tutorial::process_event(PHCompositeNode *topNode)
 {
 
-
   //////////////////////////////////////////////////////////////////////////////////////////
-  // Getting Nodes                                                                        //
+  // Get nodes                                                                            //
   //////////////////////////////////////////////////////////////////////////////////////////
-  string node_name = "INTTRAWHIT";
-  auto *node_inttrawhit_map = 
-    findNode::getClass<InttRawHitContainer>(topNode, node_name );
 
-  if (!node_inttrawhit_map)
+  //------------------------------------------------//
+  // Getting TrkrClusterContainer node              //
+  // TRKR_CLUSTER node: Information of TrkrCluster  //
+  //------------------------------------------------//
+  std::string node_name_trkr_cluster = "TRKR_CLUSTER";
+  TrkrClusterContainerv4* node_cluster_map =
+    findNode::getClass<TrkrClusterContainerv4>(topNode, node_name_trkr_cluster);
+
+  if(!node_cluster_map )
     {
-      cerr << PHWHERE << node_name << " node is missing." << endl;
+      std::cerr << PHWHERE << node_name_trkr_cluster << " node is missing." << std::endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
+
+  //--------------------------------------------------------------//
+  // Getting Acts node to assign (x, y, z) coordinate to clusters //
+  // ActsGeometry node: for the global coordinate                 //
+  //--------------------------------------------------------------//
+  ActsGeometry *node_acts = findNode::getClass<ActsGeometry>(topNode, "ActsGeometry");
+  if ( !node_acts )
+    {
+      std::cout << PHWHERE << "No ActsGeometry on node tree. Bailing." << std::endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
+
+  //---------------------------------------//
+  // Getting EventHeader to get event info //
+  //---------------------------------------//
+  EventHeaderv1* node_event_header = findNode::getClass<EventHeaderv1>( topNode, "EventHeader" );
+  if( !node_event_header )
+    {
+      std::cout << PHWHERE << "No EventHeader on node tree. Skip this event." << std::endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
+
+  MbdOut *mbdout_node = findNode::getClass<MbdOutV2>(topNode, "MbdOut");
+  if (!mbdout_node)
+    {
+      std::cout << PHWHERE << "::ERROR - cannot find MbdOut" << std::endl;
       return Fun4AllReturnCodes::ABORTEVENT;
     }
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Analysis                                                                             //
   //////////////////////////////////////////////////////////////////////////////////////////
-  int hit_num = node_inttrawhit_map->get_nhits();
-  cout << "#INTTRAWHIT: " << hit_num << endl;
-  for( int i=0; i<hit_num; i++ )
+  run_num_ = node_event_header->get_RunNumber();
+  event_id_ = node_event_header->get_EvtSequence();
+
+  // If user wants to see event infomation, do it
+  if( this->Verbosity() > 0 )
     {
-      InttRawHit* hit = node_inttrawhit_map->get_hit( i );
-
-      // Get and assign hit information
-      pid_ = hit->get_packetid();
-      bco_full_ = hit->get_bco();
-      bco_ = hit->get_FPHX_BCO();
-      diff_ = abs( (bco_full_ & 0x7f) - bco_ );
-
-      // Filling TTree
-      tree_->Fill();
-
-      if( false ) // If you want
-	{
-	  cout
-	    << std::setw(  1 ) << hit->get_packetid() << " " // FELIX server
-	    << std::setw( 12 ) << hit->get_bco() << " "      // so_called bco_full
-	    // << std::setw( 10 ) << hit->get_word() << " "  // the data from FELIX
-	    << std::setw(  2 ) << hit->get_fee() << " "      // module or felix ch
-	    << std::setw(  2 ) << hit->get_chip_id() << " "  // chip ID
-	    << std::setw(  3 ) << hit->get_channel_id() << " " // channel ID
-	    << std::setw(  1 ) << hit->get_adc() << " "      // ADC
-	    << std::setw(  3 ) << hit->get_FPHX_BCO() << " " // bco (hit bco, from 0 - 127)
-	    << std::setw(  3 ) << (hit->get_bco()&0x7f) - hit->get_FPHX_BCO() // the BCO difference
-	    // << std::setw(  1 ) << hit->get_full_FPHX() << " " // ?
-	    // << std::setw(  1 ) << hit->get_full_ROC() << " " // ?
-	    // << std::setw(  2 ) << hit->get_amplitude() << " " // only for calibration
-	    << endl;
-	}
+      std::cout << "Run " << run_num_ << "\t"
+		<< "Event " << std::setw(10) << event_id_
+		<< std::endl;
     }
 
-  // Filling histogram
-  hist_hit_num_->Fill( hit_num );
+  // analysis codes for INTT clusters are written in the function below  
+  this->mbd_analysis( topNode, mbdout_node );
+  this->cluster_analysis( topNode, node_cluster_map, node_acts );
 
-
+  // Fill event-base TTree at the end of event process
+  tree_event_->Fill();
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-//____________________________________________________________________________..
+int tutorial::cluster_analysis(PHCompositeNode *topNode, TrkrClusterContainerv4* node_cluster_map, ActsGeometry* node_acts )
+{
+
+
+  // loop over all INTT layers (0: inner of inner barrel, 1: outer of inner, 2: inner of outer, 3: outer of outer)
+  for (unsigned int inttlayer = 0; inttlayer < 4; inttlayer++)
+    {
+
+      // get clusters only on the INTT layer, and loop over them
+      for (const auto &hitsetkey : node_cluster_map->getHitSetKeys(TrkrDefs::TrkrId::inttId, inttlayer + 3) )
+	{
+
+	  // type: std::pair<ConstIterator, ConstIterator> ConstRange
+	  // here, MMap_::const_iterator ConstIterator;
+	  auto range = node_cluster_map->getClusters(hitsetkey);
+
+	  // loop over iterators of this cluster
+	  for (auto clusIter = range.first; clusIter != range.second; ++clusIter)
+	    {
+	      
+	      const auto cluskey = clusIter->first;
+	      const auto cluster = clusIter->second;
+
+	      // Get cluster position in lab-coordinate using Acts
+	      const auto globalPos = node_acts->getGlobalPosition(cluskey, cluster);
+
+	      // Set cluster position in lab-coordinate to this cluster object
+	      cluster->setPosition(0,  globalPos.x() );
+	      cluster->setPosition(1,  globalPos.y() );
+	      cluster->setPosition(2,  globalPos.z() );
+
+	      // Assign cluster parameters
+	      position_[0] = cluster->getPosition( 0 ); // x
+	      position_[1] = cluster->getPosition( 1 ); // y
+	      position_[2] = cluster->getPosition( 2 ); // z
+	      adc_ = cluster->getAdc();
+	      size_phi_ = cluster->getPhiSize();
+	      layer_ = inttlayer;
+
+	      // calc for some parameters
+	      vec_cluster_ = TVector3( position_[0],position_[1], position_[2] );
+
+	      TVector3 vec_cluster_vertex = vec_cluster_ - vec_mbd_;
+	      phi_   = vec_cluster_vertex.Phi();
+	      theta_ = vec_cluster_vertex.Theta();
+	      eta_   = vec_cluster_vertex.Eta();
+
+	      eta_diff_ = eta_ - vec_cluster_.Eta(); // to see the effect by vertex modification
+	      
+	      // After getting all cluster parameters, let's fill them
+	      tree_cluster_->Fill();
+
+	      // #cluster counters
+	      cluster_num_++; // all of them
+	      cluster_num_layer_[ inttlayer ]++; // for each layer	      
+
+	      // Then, reset the parameters (it's not mandatory if all parameters are available all the time. It's just in case)
+	      this->ResetClusterLoop();
+
+	      // If user wants to see cluster information, do it
+	      if( this->Verbosity() > 1 )
+		{
+		  // All Get functions of TrkrCluster are here though some are commented out
+		  std::cout 
+		    << std::setw(6) << std::setprecision(3) << cluster->getPosition(0) << " " // ; // float 
+		    << std::setw(6) << std::setprecision(3) << cluster->getPosition(1) << " " // ; // float 
+		    << std::setw(6) << std::setprecision(3) << cluster->getPosition(2) << " " // ; // float 
+		    << std::setw(5) << std::setprecision(5) << cluster->getAdc() << " " // ; // unsigned int 
+		    << std::setw(3) << std::setprecision(3) << cluster->getPhiSize() << " " // ; // float 
+		    << std::endl;
+
+		  if( this->Verbosity() > 2 )
+		    {
+		      std::cout << "Phi: " << vec_cluster_.Phi() << " <---> " << vec_cluster_vertex.Phi() << "\t"		
+				<< "Theta: " << vec_cluster_.Theta() << " <---> " << vec_cluster_vertex.Theta() << "\t"
+				<< "Eta: " << vec_cluster_.Eta() << " <---> " << vec_cluster_vertex.Eta()
+				<< std::endl;
+		      
+		    } // End of if( this->Verbosity() > 2 )
+
+		} // End of if( this->Verbosity() > 1 )
+	      
+	    } // End of for (auto clusIter = range.first; clusIter != range.second; ++clusIter)
+	  
+	} // End of for (const auto &hitsetkey : node_cluster_map->getHitSetKeys(TrkrDefs::TrkrId::inttId, inttlayer + 3) )
+      
+    } // End of for (unsigned int inttlayer = 0; inttlayer < 4; inttlayer++)
+
+  if( this->Verbosity() > 0 )
+    {
+      std::cout << "Cluster num: " << std::setw(5) << cluster_num_ << std::endl;
+    }
+  
+  return Fun4AllReturnCodes::EVENT_OK;
+}
+
+int tutorial::mbd_analysis( PHCompositeNode *topNode, MbdOut* mbdout_node )
+{
+
+  /////////////////////////////////////////////////////////////////////////////////////
+  // Analysis at the level of MbdOut                                                 //
+  /////////////////////////////////////////////////////////////////////////////////////
+  // Condition of valid: t0 needs to be finite and larger than -9999
+  is_valid_mbd_out_ = mbdout_node->isValid();
+  if( is_valid_mbd_out_ == false )
+    return Fun4AllReturnCodes::EVENT_OK;
+
+  position_mbd_[2] = mbdout_node->get_zvtx();
+  vec_mbd_.SetZ( position_mbd_[2] );
+  position_error_mbd_[2] = mbdout_node->get_zvtxerr();
+
+  for( int i=0; i<2; i++ )
+    {
+      mbd_q_part_[i] = mbdout_node->get_q( i );
+    }
+
+  mbd_q_ = mbd_q_part_[0] =+ mbd_q_part_[1];
+  return Fun4AllReturnCodes::EVENT_OK;
+}
+
+
 int tutorial::ResetEvent(PHCompositeNode *topNode)
 {
 
+  this->ResetClusterLoop(); // Resetting cluster parameters
+
+  // parameters to be reset event by event
+  run_num_ = event_id_
+    = cluster_num_ 
+    = cluster_num_layer_[ 0 ] = cluster_num_layer_[ 1 ]
+    = cluster_num_layer_[ 2 ] = cluster_num_layer_[ 3 ]
+    = mbd_q_part_[0] = mbd_q_part_[1] = mbd_q_
+    = 0;
+  
+  is_valid_mbd_out_ = false;
+  position_mbd_[0] = position_mbd_[1] = position_mbd_[2] = -9999; // good to set strange value
+  position_error_mbd_[0] = position_error_mbd_[1] = position_error_mbd_[2] = -1; // -1 is strange, right?
+
+  vec_mbd_ = TVector3( 0, 0, 0 ); // 
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-
-//____________________________________________________________________________..
 int tutorial::EndRun(const int runnumber)
 {
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-//____________________________________________________________________________..
 int tutorial::End(PHCompositeNode *topNode)
 {
-
-  output_->WriteTObject( hist_hit_num_, hist_hit_num_->GetName() );
-  output_->WriteTObject( tree_, tree_->GetName() );
+  // Save Trrees into the output file
+  output_->WriteTObject( tree_event_, tree_event_->GetName() );
+  output_->WriteTObject( tree_cluster_, tree_cluster_->GetName() );
   output_->Close();
   
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-//____________________________________________________________________________..
 int tutorial::Reset(PHCompositeNode *topNode)
 {
-
+    
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-//____________________________________________________________________________..
+int tutorial::ResetClusterLoop()
+{
+  // Parameters to be resetted in the cluster loop are resettted
+
+  // init/reset variables
+  position_[0] = position_[1] = position_[2]
+    = phi_ = theta_ = eta_
+    = -9999.9;
+  adc_ = size_phi_ = 0;
+
+  vec_cluster_ = TVector3( 0, 0, 0 );
+  return Fun4AllReturnCodes::EVENT_OK;
+}
+
 void tutorial::Print(const std::string &what) const
 {
 
